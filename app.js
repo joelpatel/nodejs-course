@@ -9,10 +9,17 @@ const express = require("express");
 
 const app = express();
 
+app.use("/add-product", (req, res, next) => {
+  console.log("route: /add-product");
+  res.send("<h2>Product Added Successfully</h2>");
+  //   res.send("<h2>2nd response</h2>"); // won't work, causes an error
+});
+
 // use: allows us to add a new middleware function
 // inside the use will bascially be a function with 3 things
 // request, response & next
-app.use((req, res, next) => {
+app.use("/", (req, res, next) => {
+  console.log("route: /");
   console.log("in the first middleware");
   next(); // this allows the request to travel onto the next middleware (top -> bottom)
 });
