@@ -27,9 +27,9 @@ const requestHandler = (req, res) => {
       fs.appendFile("message.txt", message + "\n", (err) => {
         res.writeHead(302, { Location: "/" });
         /*
-                res.statusCode = 302;
-                res.setHeader("Location", "/");
-             */
+            res.statusCode = 302;
+            res.setHeader("Location", "/");
+         */
         return res.end();
       });
     });
