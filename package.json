@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/joelpatel/nodejs-course/issues"
   },
-  "homepage": "https://github.com/joelpatel/nodejs-course#readme"
+  "homepage": "https://github.com/joelpatel/nodejs-course#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
 }
