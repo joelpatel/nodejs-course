@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router(); // mini express app, pluggable into other express apps (main app in app.js)
 
+// NOTE: IMP NOTE: .get() .post() etc. use exact match unlike .use() which matches the starting of the path ✅
 router.get("/add-product", (req, res, next) => {
   //   console.log("route: /add-product");
   res.send(
