@@ -1,7 +1,7 @@
+let users = ["one", "two", "three"];
 const requestHandler = (req, res) => {
   const url = req.url;
   const method = req.method;
-  let users = ["one", "two", "three"];
 
   if (url === "/") {
     res.setHeader("Content-Type", "text/html");
@@ -12,7 +12,7 @@ const requestHandler = (req, res) => {
     res.write("<body>");
     res.write('<h1>Welcome, you are currently in "/" route.</h1>');
 
-    res.write('< action="create-user" method="POST">');
+    res.write('<form action="/create-user" method="POST">');
     res.write('<input type="text" name="username" />');
     res.write('<button type="submit">Create</button>');
 
@@ -36,6 +36,22 @@ const requestHandler = (req, res) => {
     res.write("</body>");
     res.write("</html>");
     return res.end();
+  }
+
+  if (url === "/create-user" && method === "POST") {
+    const body = [];
+    req.on("data", (data) => {
+      body.push(data);
+    });
+
+    return req.on("end", () => {
+      const parsedBody = Buffer.concat(body).toString();
+      const username = parsedBody.split("=")[1];
+      users.push(username);
+
+      res.writeHead(302, { Location: "/users" });
+      return res.end();
+    });
   }
 
   res.setHeader("Content-Type", "text/html");
