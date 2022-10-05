@@ -16,6 +16,11 @@ const app = express();
 // request, response & next
 app.use((req, res, next) => {
   console.log("in the first middleware");
+  next(); // this allows the request to travel onto the next middleware (top -> bottom)
+});
+
+app.use((req, res, next) => {
+  console.log("in the second middleware");
 });
 
 const server = http.createServer(app);
