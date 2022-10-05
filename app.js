@@ -18,4 +18,8 @@ app.use(bodyParser.urlencoded({ extended: false })); // .urlencoded() yields a m
 app.use(adminRoutes);
 app.use(shopRoutes);
 
+app.use((req, res, next) => {
+  res.status(404).send("<h1>404 Page Not Found</h1>"); // send needs to be last
+});
+
 app.listen(5000);
