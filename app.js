@@ -1,10 +1,3 @@
-// express.js is all about middleware
-/*
-    request -> middleware -> maybe another middleware -> response
-    the request will funnel through various dev defined middlewares before creating and sending the response
-    this allows you to split your code into different blocks to handle differet parts of the response in different middlewares
-    this is the pluggable nature of express.js
-*/
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -14,10 +7,9 @@ const shopRoutes = require("./routes/shop");
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: false })); // .urlencoded() yields a middleware function like below ones with next() call at the end but it also helps in getting the body of the request like we did in previous course sections
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use(adminRoutes);
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
@@ -25,7 +17,7 @@ app.use((req, res, next) => {
   console.log("requested page not found");
   res
     .status(404)
-    .sendFile(path.join(__dirname, "views", "page-not-found.html")); // send needs to be last
+    .sendFile(path.join(__dirname, "views", "page-not-found.html"));
 });
 
 app.listen(5000);
