@@ -15,6 +15,7 @@ const shopRoutes = require("./routes/shop");
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false })); // .urlencoded() yields a middleware function like below ones with next() call at the end but it also helps in getting the body of the request like we did in previous course sections
+app.use(express.static(path.join(__dirname, "public")));
 
 // app.use(adminRoutes);
 app.use("/admin", adminRoutes);
