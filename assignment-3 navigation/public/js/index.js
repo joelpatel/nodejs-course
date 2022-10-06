@@ -1,1 +1,3 @@
-console.log("index.js loaded");
+setTimeout(() => {
+  alert("index.js loaded");
+}, 80);
