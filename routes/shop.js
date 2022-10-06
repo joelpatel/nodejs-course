@@ -1,3 +1,5 @@
+const path = require("path");
+
 const express = require("express");
 
 const router = express.Router();
@@ -8,7 +10,9 @@ const router = express.Router();
 router.get("/", (req, res, next) => {
   //   console.log("route: /");
   //   next(); // this allows the request to travel onto the next middleware (top -> bottom)
-  res.send("<h1>hello from express</h1>");
+  // res.send("<h1>hello from express</h1>");
+
+  res.sendFile(path.join(__dirname, "../", "views", "shop.html"));
 });
 
 // router.use((req, res, next) => {

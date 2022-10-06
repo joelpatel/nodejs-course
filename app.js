@@ -7,6 +7,7 @@
 */
 const express = require("express");
 const bodyParser = require("body-parser");
+const path = require("path");
 
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
@@ -21,7 +22,9 @@ app.use(shopRoutes);
 
 app.use((req, res, next) => {
   console.log("requested page not found");
-  res.status(404).send("<h1>404 Page Not Found</h1>"); // send needs to be last
+  res
+    .status(404)
+    .sendFile(path.join(__dirname, "views", "page-not-found.html")); // send needs to be last
 });
 
 app.listen(5000);
