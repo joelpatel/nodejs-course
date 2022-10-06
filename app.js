@@ -7,6 +7,14 @@ const shopRoutes = require("./routes/shop");
 
 const app = express();
 
+/*
+ * Allows us to set any values globally on our express application.
+ * This can also be keys and/or configuration items that express doesn't understand.
+ * Like Java's setter and getter. It can also be retrieved by app.get("name").
+ */
+app.set("view engine", "pug");
+app.set("views", "views"); // this is also the default value so it is not needed in current setup
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
