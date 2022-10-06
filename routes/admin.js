@@ -2,6 +2,8 @@ const path = require("path");
 
 const express = require("express");
 
+const rootDir = require("../utils/path");
+
 const router = express.Router(); // mini express app, pluggable into other express apps (main app in app.js)
 
 // NOTE: IMP NOTE: .get() .post() etc. use exact match unlike .use() which matches the starting of the path ✅
@@ -14,7 +16,8 @@ router.get("/add-product", (req, res, next) => {
   // );
   //   res.send("<h2>2nd response</h2>"); // won't work, causes an error
 
-  res.sendFile(path.join(__dirname, "../", "views", "add-product.html"));
+  // res.sendFile(path.join(__dirname, "..", "views", "add-product.html"));
+  res.sendFile(path.join(rootDir, "views", "add-product.html"));
 });
 
 // /admin/add-product => POST

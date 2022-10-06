@@ -2,6 +2,8 @@ const path = require("path");
 
 const express = require("express");
 
+const rootDir = require("../utils/path");
+
 const router = express.Router();
 
 // use: allows us to add a new middleware function
@@ -12,7 +14,8 @@ router.get("/", (req, res, next) => {
   //   next(); // this allows the request to travel onto the next middleware (top -> bottom)
   // res.send("<h1>hello from express</h1>");
 
-  res.sendFile(path.join(__dirname, "../", "views", "shop.html"));
+  // res.sendFile(path.join(__dirname, "..", "views", "shop.html"));
+  res.sendFile(path.join(rootDir, "views", "shop.html"));
 });
 
 // router.use((req, res, next) => {
