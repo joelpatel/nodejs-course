@@ -35,12 +35,10 @@ const createPost = (req, res, next) => {
    */
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: "Validation Failed! Entered data is incorrect.",
-      errors: errors.array(),
-    });
-
-    return;
+    const error = new Error("Validation Failed! Entered data is incorrect.");
+    error.statusCode = 422;
+    error.errors = errors.array();
+    throw error;
   }
 
   /**
@@ -65,7 +63,16 @@ const createPost = (req, res, next) => {
         post: result,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500; // indicating server side error
+      }
+      next(err);
+      /**
+       * why not throw? because it's an async function so it won't go to next error handling function in chain
+       * thats why we need to use next(). it'll cause the execution to go to the next error handling express middleware.
+       */
+    });
 };
 
 export { getPosts, createPost };
