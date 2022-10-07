@@ -22,7 +22,7 @@ app.use("/feed", feedRoutes);
 
 mongoose
   .connect(
-    `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}.ccmd1sr.mongodb.net/?retryWrites=true&w=majority`
+    `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}.ccmd1sr.mongodb.net/${process.env.MONGODB_DATABASE_NAME}?retryWrites=true&w=majority`
   )
   .then((_) => {
     app.listen(5000);
