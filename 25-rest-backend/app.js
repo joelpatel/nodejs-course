@@ -1,8 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import { config } from "dotenv";
 
 import feedRoutes from "./routes/feed.js";
 
+config(); // load from .env to process.env
 const app = express();
 
 app.use(bodyParser.json()); // application/json
@@ -17,4 +20,11 @@ app.use((req, res, next) => {
 });
 app.use("/feed", feedRoutes);
 
-app.listen(5000);
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}.ccmd1sr.mongodb.net/?retryWrites=true&w=majority`
+  )
+  .then((_) => {
+    app.listen(5000);
+  })
+  .catch((err) => console.log(err));
