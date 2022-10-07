@@ -1,5 +1,7 @@
 import { validationResult } from "express-validator";
 
+import Post from "../models/post.js";
+
 const getPosts = (req, res, next) => {
   res.status(200).json({
     posts: [
@@ -48,16 +50,22 @@ const createPost = (req, res, next) => {
    */
   const title = req.body.title;
   const content = req.body.content;
-  res.status(201).json({
-    message: "Post created Successfully!",
-    post: {
-      _id: new Date().toISOString(),
-      title,
-      content,
-      creator: { name: "Max" },
-      createdAt: new Date(),
-    },
+  const post = new Post({
+    title,
+    content,
+    imageURL: "images/image-0.png",
+    creator: { name: "Max" },
   });
+
+  post
+    .save()
+    .then((result) => {
+      res.status(201).json({
+        message: "Post created Successfully!",
+        post: result,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 export { getPosts, createPost };
