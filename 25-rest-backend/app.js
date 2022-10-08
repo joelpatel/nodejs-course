@@ -11,13 +11,23 @@ import feedRoutes from "./routes/feed.js";
 config(); // load from .env to process.env
 const app = express();
 
+/**
+ * Need following 2 lines of code because
+ * this is an ES6 module and not a CommonJS module.
+ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(bodyParser.json()); // application/json
 app.use("/images", express.static(path.join(__dirname, "images")));
+/** 👆
+ * Therefore, whenever 'http://localhost:5000/images/{image_name}' url is hit
+ * the server responds with that image and causes the receiver to download the
+ * image.
+ */
+
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // you could lock it down for for specific domains only by replacing * and for multiple domains separate with ,
+  res.setHeader("Access-Control-Allow-Origin", "*"); // you could lock it down for specific domains only by replacing * and for multiple domains separate with ,
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, PATCH, DELETE"
@@ -25,6 +35,8 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+
+// ANY method & /feed + whatever after feed in path of req url
 app.use("/feed", feedRoutes);
 
 /**
@@ -34,7 +46,6 @@ app.use("/feed", feedRoutes);
  * 2) an error is passed in next().
  */
 app.use((error, req, res, next) => {
-  console.log(error);
   const status = error.statusCode || 500; // default value will be 500
   const message = error.message; // default property (what we pass as an argument to the constructor)
   const errors = error.errors || [];
