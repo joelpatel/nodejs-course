@@ -54,7 +54,7 @@ const createPost = (req, res, next) => {
   }
 
   /**
-   *
+   * Check if file was provided or not.
    */
   if (!req.file) {
     const error = new Error("No image provided.");
