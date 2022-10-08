@@ -6,6 +6,7 @@ import {
   createPost,
   getPost,
   updatePost,
+  deletePost,
 } from "../controllers/feed.js";
 
 const router = express.Router();
@@ -39,5 +40,7 @@ router.put(
  * put, post, patch requests can have req body
  * Here put has param and it will also have a request body
  */
+
+router.delete("/post/:postID", deletePost);
 
 export default router;

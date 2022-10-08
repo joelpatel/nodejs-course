@@ -179,4 +179,37 @@ const clearImage = (filePath) => {
   });
 };
 
-export { getPosts, createPost, getPost, updatePost };
+const deletePost = (req, res, next) => {
+  const postID = req.params.postID;
+  /**
+   * Reason for using Post.findById instead of Post.findByIdAndRemove
+   * is because we would want to verify whether the post was created
+   * by the same user who is requesting the deletion of the post.
+   */
+  Post.findById(postID)
+    .then((post) => {
+      if (!post) {
+        const error = new Error("Requested post does not exist.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      // Check logged in user.
+      clearImage(post.imageURL);
+      return Post.findByIdAndRemove(postID);
+    })
+    .then((result) => {
+      res.status(200).json({
+        message: "Post deleted successfully.",
+        post: result,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+export { getPosts, createPost, getPost, updatePost, deletePost };
