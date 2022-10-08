@@ -1,6 +1,13 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { validationResult } from "express-validator";
 
 import Post from "../models/post.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const getPosts = (req, res, next) => {
   Post.find()
@@ -97,4 +104,79 @@ const createPost = (req, res, next) => {
     });
 };
 
-export { getPosts, createPost, getPost };
+const updatePost = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error(
+      "Validation failed. Please enter all required data."
+    );
+    error.statusCode = 422;
+    error.errors = errors.array();
+    throw error;
+  }
+
+  const postID = req.params.postID;
+  const title = req.body.title;
+  const content = req.body.content;
+
+  /**
+   * default value will be previous image
+   * but if user wants to change image,
+   * then they can change the file and
+   * file.path will be set
+   */
+  let imageURL = req.body.image;
+  if (req.file) {
+    imageURL = req.file.path;
+  }
+  if (!imageURL) {
+    const error = new Error("No file provided.");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  Post.findById(postID)
+    .then((post) => {
+      if (!post) {
+        const error = new Error("Could not find the requested post.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      /**
+       * checking if the image provided is different
+       * if its different then delete old image
+       */
+      if (imageURL !== post.imageURL) {
+        clearImage(post.imageURL);
+      }
+
+      // update the post
+      post.title = title;
+      post.content = content;
+      post.imageURL = imageURL;
+
+      return post.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        message: "Post updated successfully.",
+        post: result,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+const clearImage = (filePath) => {
+  filePath = path.join(__dirname, "..", filePath);
+  fs.unlink(filePath, (err) => {
+    if (err) console.log(err);
+  });
+};
+
+export { getPosts, createPost, getPost, updatePost };

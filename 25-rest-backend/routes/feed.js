@@ -1,7 +1,12 @@
 import express from "express";
 import { body } from "express-validator";
 
-import { getPosts, createPost, getPost } from "../controllers/feed.js";
+import {
+  getPosts,
+  createPost,
+  getPost,
+  updatePost,
+} from "../controllers/feed.js";
 
 const router = express.Router();
 
@@ -20,5 +25,19 @@ router.post(
 
 // GET /feed/post/:postID
 router.get("/post/:postID", getPost);
+
+// PUT /feed/post/:postID
+router.put(
+  "/post/:postID",
+  [
+    body("title").trim().isLength({ min: 5 }),
+    body("content").trim().isLength({ min: 5 }),
+  ],
+  updatePost
+);
+/**
+ * put, post, patch requests can have req body
+ * Here put has param and it will also have a request body
+ */
 
 export default router;
