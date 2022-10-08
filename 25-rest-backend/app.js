@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
+import multer from "multer";
 import { config } from "dotenv";
 
 import feedRoutes from "./routes/feed.js";
@@ -17,8 +18,30 @@ const app = express();
  */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
 
 app.use(bodyParser.json()); // application/json
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+);
 app.use("/images", express.static(path.join(__dirname, "images")));
 /** 👆
  * Therefore, whenever 'http://localhost:5000/images/{image_name}' url is hit

@@ -54,16 +54,26 @@ const createPost = (req, res, next) => {
   }
 
   /**
+   *
+   */
+  if (!req.file) {
+    const error = new Error("No image provided.");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  /**
    * Logic to add requested data to posts.
    * Also send a response indicating the
    * newly created post.
    */
+  const imageURL = req.file.path;
   const title = req.body.title;
   const content = req.body.content;
   const post = new Post({
     title,
     content,
-    imageURL: "images/image-0.png",
+    imageURL,
     creator: { name: "Max" },
   });
 
