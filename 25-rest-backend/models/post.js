@@ -23,4 +23,4 @@ const postSchema = new Schema(
   { timestamps: true } // mongoose will automatically add timestamps (createdAt & updatedAt) when a new doc is added
 );
 
-export default mongoose.model("Post", postSchema); // here collection name will be Post
+export default mongoose.model("Post", postSchema); // here collection name will be posts - note it's plural
