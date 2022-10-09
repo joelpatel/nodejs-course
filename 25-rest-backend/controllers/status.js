@@ -11,7 +11,6 @@ const updateStatus = (req, res, next) => {
     throw err;
   }
 
-  console.log("requested status: " + req.body.status);
   User.findById(req.userIDFromJWTToken)
     .then((user) => {
       if (!user) {
@@ -24,7 +23,6 @@ const updateStatus = (req, res, next) => {
       return user.save();
     })
     .then((updatedUser) => {
-      console.log("updated status: " + updatedUser.status);
       res.status(200).json({
         message: "status updated successfully",
         status: updatedUser.status,
