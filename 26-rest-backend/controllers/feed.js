@@ -102,7 +102,7 @@ const createPost = async (req, res, next) => {
     } else {
       user.posts.push(post); // letting mongoose do the heavy lifting in figuring out the post id
     }
-    const updatedUser = user.save();
+    await user.save();
     res.status(201).json({
       message: "Post created Successfully!",
       post: savedPost,
