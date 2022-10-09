@@ -19,6 +19,7 @@ const getPosts = (req, res, next) => {
     .then((count) => {
       totalItems = count;
       return Post.find()
+        .populate("creator")
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
     })
