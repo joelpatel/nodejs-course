@@ -36,29 +36,28 @@ const getPosts = async (req, res, next) => {
  * REST endpoint to GET a single post.
  * @param :postID - used to identify which post to GET
  */
-const getPost = (req, res, next) => {
+const getPost = async (req, res, next) => {
   const postID = req.params.postID;
-  Post.findById(postID)
-    .then((post) => {
-      if (!post) {
-        // no post was found
-        const error = new Error("Post not found.");
-        error.statusCode = 404;
-        throw error; // here throw works because execution will goto the next catch block below which will execute the next() call
-      }
+  try {
+    const post = await Post.findById(postID);
+    if (!post) {
+      // no post was found
+      const error = new Error("Post not found.");
+      error.statusCode = 404;
+      throw error; // here throw works because execution will goto the next catch block below which will execute the next() call
+    }
 
-      // post found
-      res.status(200).json({ message: "Post fetched.", post });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+    // post found
+    res.status(200).json({ message: "Post fetched.", post });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
-const createPost = (req, res, next) => {
+const createPost = async (req, res, next) => {
   /**
    * Handling server side validation.
    */
@@ -94,43 +93,34 @@ const createPost = (req, res, next) => {
     creator: req.userIDFromJWTToken,
   });
 
-  let savedPostRef;
-  let creator;
-  post
-    .save()
-    .then((savedPost) => {
-      savedPostRef = savedPost;
-      return User.findById(req.userIDFromJWTToken);
-    })
-    .then((user) => {
-      creator = user;
-      if (savedPostRef._id) {
-        user.posts.push(savedPostRef._id); // we are providing the postID for faster execution
-      } else {
-        user.posts.push(post); // letting mongoose do the heavy lifting in figuring out the post id
-      }
-      return user.save();
-    })
-    .then((updatedUser) => {
-      res.status(201).json({
-        message: "Post created Successfully!",
-        post: savedPostRef,
-        creator: { _id: creator._id, name: creator.name },
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500; // indicating server side error
-      }
-      next(err);
-      /**
-       * why not throw? because it's an async function so it won't go to next error handling function in chain
-       * thats why we need to use next(). it'll cause the execution to go to the next error handling express middleware.
-       */
+  try {
+    const savedPost = await post.save();
+
+    const user = await User.findById(req.userIDFromJWTToken);
+    if (savedPost._id) {
+      user.posts.push(savedPost._id); // we are providing the postID for faster execution
+    } else {
+      user.posts.push(post); // letting mongoose do the heavy lifting in figuring out the post id
+    }
+    const updatedUser = user.save();
+    res.status(201).json({
+      message: "Post created Successfully!",
+      post: savedPost,
+      creator: { _id: user._id, name: user.name },
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500; // indicating server side error
+    }
+    next(err);
+    /**
+     * why not throw? because it's an async function so it won't go to next error handling function in chain
+     * thats why we need to use next(). it'll cause the execution to go to the next error handling express middleware.
+     */
+  }
 };
 
-const updatePost = (req, res, next) => {
+const updatePost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error(
@@ -161,52 +151,50 @@ const updatePost = (req, res, next) => {
     throw error;
   }
 
-  Post.findById(postID)
-    .then((post) => {
-      if (!post) {
-        const error = new Error("Could not find the requested post.");
-        error.statusCode = 404;
-        throw error;
-      }
+  try {
+    const post = await Post.findById(postID);
+    if (!post) {
+      const error = new Error("Could not find the requested post.");
+      error.statusCode = 404;
+      throw error;
+    }
 
-      /**
-       * Check if the creator of the post
-       * is the one requesting the updation
-       * of this post.
-       */
-      if (post.creator.toString() !== req.userIDFromJWTToken) {
-        const err = new Error("Not authorized!");
-        err.statusCode = 403;
-        throw err;
-      }
+    /**
+     * Check if the creator of the post
+     * is the one requesting the updation
+     * of this post.
+     */
+    if (post.creator.toString() !== req.userIDFromJWTToken) {
+      const err = new Error("Not authorized!");
+      err.statusCode = 403;
+      throw err;
+    }
 
-      /**
-       * checking if the image provided is different
-       * if its different then delete old image
-       */
-      if (imageURL !== post.imageURL) {
-        clearImage(post.imageURL);
-      }
+    /**
+     * checking if the image provided is different
+     * if its different then delete old image
+     */
+    if (imageURL !== post.imageURL) {
+      clearImage(post.imageURL);
+    }
 
-      // update the post
-      post.title = title;
-      post.content = content;
-      post.imageURL = imageURL;
+    // update the post
+    post.title = title;
+    post.content = content;
+    post.imageURL = imageURL;
 
-      return post.save();
-    })
-    .then((result) => {
-      res.status(200).json({
-        message: "Post updated successfully.",
-        post: result,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+    const result = await post.save();
+
+    res.status(200).json({
+      message: "Post updated successfully.",
+      post: result,
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
 const clearImage = (filePath) => {
@@ -216,56 +204,50 @@ const clearImage = (filePath) => {
   });
 };
 
-const deletePost = (req, res, next) => {
+const deletePost = async (req, res, next) => {
   const postID = req.params.postID;
   /**
    * Reason for using Post.findById instead of Post.findByIdAndRemove
    * is because we would want to verify whether the post was created
    * by the same user who is requesting the deletion of the post.
    */
-  let resultOfPostDeletion;
-  Post.findById(postID)
-    .then((post) => {
-      if (!post) {
-        const error = new Error("Requested post does not exist.");
-        error.statusCode = 404;
-        throw error;
-      }
+  try {
+    const post = await Post.findById(postID);
+    if (!post) {
+      const error = new Error("Requested post does not exist.");
+      error.statusCode = 404;
+      throw error;
+    }
 
-      /**
-       * Check if the creator of the post
-       * is the one requesting the deletion
-       * of this post.
-       */
-      if (post.creator.toString() !== req.userIDFromJWTToken) {
-        const err = new Error("Not authorized!");
-        err.statusCode = 403;
-        throw err;
-      }
+    /**
+     * Check if the creator of the post
+     * is the one requesting the deletion
+     * of this post.
+     */
+    if (post.creator.toString() !== req.userIDFromJWTToken) {
+      const err = new Error("Not authorized!");
+      err.statusCode = 403;
+      throw err;
+    }
 
-      clearImage(post.imageURL);
-      return Post.findByIdAndRemove(postID);
-    })
-    .then((result) => {
-      resultOfPostDeletion = result;
-      return User.findById(req.userIDFromJWTToken);
-    })
-    .then((user) => {
-      user.posts.pull(postID); // pull method is of mongoose not built in arrays
-      return user.save();
-    })
-    .then((updatedUser) => {
-      res.status(200).json({
-        message: "Post deleted successfully.",
-        post: resultOfPostDeletion,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+    clearImage(post.imageURL);
+
+    const resultOfPostDeletion = await Post.findByIdAndRemove(postID);
+    const user = await User.findById(req.userIDFromJWTToken);
+
+    user.posts.pull(postID); // pull method is of mongoose not built in arrays
+    await user.save();
+
+    res.status(200).json({
+      message: "Post deleted successfully.",
+      post: resultOfPostDeletion,
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
 export { getPosts, createPost, getPost, updatePost, deletePost };
