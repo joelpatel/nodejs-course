@@ -14,6 +14,12 @@ const updateStatus = (req, res, next) => {
   console.log("requested status: " + req.body.status);
   User.findById(req.userIDFromJWTToken)
     .then((user) => {
+      if (!user) {
+        const err = new Error("User not found.");
+        err.statusCode = 404;
+        throw err;
+      }
+
       user.status = req.body.status;
       return user.save();
     })
@@ -35,6 +41,12 @@ const updateStatus = (req, res, next) => {
 const getStatus = (req, res, next) => {
   User.findById(req.userIDFromJWTToken)
     .then((user) => {
+      if (!user) {
+        const err = new Error("User not found.");
+        err.statusCode = 404;
+        throw err;
+      }
+
       res.status(200).json({
         status: user.status,
       });
