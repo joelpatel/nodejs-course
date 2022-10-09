@@ -9,6 +9,7 @@ import { config } from "dotenv";
 
 import feedRoutes from "./routes/feed.js";
 import authRoutes from "./routes/auth.js";
+import statusRouter from "./routes/status.js";
 
 config(); // load from .env to process.env
 const app = express();
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 
 // ANY method & /feed + whatever after feed in path of req url
 app.use("/feed", feedRoutes);
+app.use("/status", statusRouter);
 app.use("/auth", authRoutes);
 
 /**
