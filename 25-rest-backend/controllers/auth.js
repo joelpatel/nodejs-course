@@ -1,7 +1,11 @@
+import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
+import { config } from "dotenv";
 
 import User from "../models/user.js";
+
+config();
 
 const signup = (req, res, next) => {
   /**
@@ -18,7 +22,7 @@ const signup = (req, res, next) => {
   }
 
   const email = req.body.email;
-  const password = req.body.email;
+  const password = req.body.password;
   const name = req.body.name;
 
   bcrypt
@@ -45,4 +49,53 @@ const signup = (req, res, next) => {
     });
 };
 
-export { signup };
+const login = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  let loadedUser;
+  User.findOne({ email: email })
+    .then((user) => {
+      if (!user) {
+        const err = new Error("Please enter valid information.");
+        err.statusCode = 401; // 401 -> not authenticated
+        throw err;
+      }
+
+      /**
+       * Valid email address.
+       * Now, validate the password.
+       */
+      loadedUser = user;
+      return bcrypt.compare(password, loadedUser.password);
+    })
+    .then((isEqual) => {
+      if (!isEqual) {
+        const err = new Error("Please enter valid information.");
+        err.statusCode = 401;
+        throw err;
+      }
+      /**
+       * email and password matches
+       */
+      const token = jwt.sign(
+        {
+          email: loadedUser.email,
+          userID: loadedUser._id.toString(),
+        },
+        process.env.JWT_PRIVATE_KEY,
+        { expiresIn: "1h" }
+      );
+      res.status(200).json({
+        token,
+        userID: loadedUser._id.toString(),
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+export { signup, login };
