@@ -228,6 +228,7 @@ const deletePost = (req, res, next) => {
    * is because we would want to verify whether the post was created
    * by the same user who is requesting the deletion of the post.
    */
+  let resultOfPostDeletion;
   Post.findById(postID)
     .then((post) => {
       if (!post) {
@@ -251,9 +252,17 @@ const deletePost = (req, res, next) => {
       return Post.findByIdAndRemove(postID);
     })
     .then((result) => {
+      resultOfPostDeletion = result;
+      return User.findById(req.userIDFromJWTToken);
+    })
+    .then((user) => {
+      user.posts.pull(postID); // pull method is of mongoose not built in arrays
+      return user.save();
+    })
+    .then((updatedUser) => {
       res.status(200).json({
         message: "Post deleted successfully.",
-        post: result,
+        post: resultOfPostDeletion,
       });
     })
     .catch((err) => {
