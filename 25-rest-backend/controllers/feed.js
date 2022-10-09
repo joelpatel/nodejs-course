@@ -175,6 +175,17 @@ const updatePost = (req, res, next) => {
       }
 
       /**
+       * Check if the creator of the post
+       * is the one requesting the updation
+       * of this post.
+       */
+      if (post.creator.toString() !== req.userIDFromJWTToken) {
+        const err = new Error("Not authorized!");
+        err.statusCode = 403;
+        throw err;
+      }
+
+      /**
        * checking if the image provided is different
        * if its different then delete old image
        */
@@ -225,7 +236,17 @@ const deletePost = (req, res, next) => {
         throw error;
       }
 
-      // Check logged in user.
+      /**
+       * Check if the creator of the post
+       * is the one requesting the deletion
+       * of this post.
+       */
+      if (post.creator.toString() !== req.userIDFromJWTToken) {
+        const err = new Error("Not authorized!");
+        err.statusCode = 403;
+        throw err;
+      }
+
       clearImage(post.imageURL);
       return Post.findByIdAndRemove(postID);
     })
