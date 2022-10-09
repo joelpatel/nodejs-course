@@ -83,7 +83,7 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
-    fetch("http://localhost:5000/status/updateStatus", {
+    fetch("http://localhost:5000/status/update", {
       method: "PUT",
       headers: {
         Authorization: "Bearer " + this.props.token,
@@ -100,7 +100,7 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        // console.log(resData);
         this.setState({ status: resData.status });
       })
       .catch(this.catchError);
@@ -156,7 +156,7 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        // console.log(resData);
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
@@ -212,7 +212,7 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        // console.log(resData);
         this.setState((prevState) => {
           const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };

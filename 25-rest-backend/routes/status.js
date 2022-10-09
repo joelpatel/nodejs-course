@@ -7,7 +7,7 @@ import isAuth from "../middleware/is-auth.js";
 const router = express.Router();
 
 router.put(
-  "/updateStatus",
+  "/update",
   isAuth,
   [body("status").trim().not().isEmpty()],
   updateStatus
