@@ -18,6 +18,7 @@ router.get("/posts", isAuth, getPosts);
 // POST /feed/post
 router.post(
   "/post",
+  isAuth, // here isAuth will be the first middleware then the body validation middleware execute
   [
     body("title").trim().isLength({ min: 5 }),
     body("content").trim().isLength({ min: 5 }),
@@ -26,11 +27,12 @@ router.post(
 );
 
 // GET /feed/post/:postID
-router.get("/post/:postID", getPost);
+router.get("/post/:postID", isAuth, getPost);
 
 // PUT /feed/post/:postID
 router.put(
   "/post/:postID",
+  isAuth, // same as above here
   [
     body("title").trim().isLength({ min: 5 }),
     body("content").trim().isLength({ min: 5 }),
@@ -42,6 +44,6 @@ router.put(
  * Here put has param and it will also have a request body
  */
 
-router.delete("/post/:postID", deletePost);
+router.delete("/post/:postID", isAuth, deletePost);
 
 export default router;
