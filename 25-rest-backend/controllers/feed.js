@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { validationResult } from "express-validator";
 
 import Post from "../models/post.js";
+import User from "../models/user.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,15 +96,31 @@ const createPost = (req, res, next) => {
     title,
     content,
     imageURL,
-    creator: { name: "Max" },
+    creator: req.userIDFromJWTToken,
   });
 
+  let savedPostRef;
+  let creator;
   post
     .save()
-    .then((result) => {
+    .then((savedPost) => {
+      savedPostRef = savedPost;
+      return User.findById(req.userIDFromJWTToken);
+    })
+    .then((user) => {
+      creator = user;
+      if (savedPostRef._id) {
+        user.posts.push(savedPostRef._id); // we are providing the postID for faster execution
+      } else {
+        user.posts.push(post); // letting mongoose do the heavy lifting in figuring out the post id
+      }
+      return user.save();
+    })
+    .then((updatedUser) => {
       res.status(201).json({
         message: "Post created Successfully!",
-        post: result,
+        post: savedPostRef,
+        creator: { _id: creator._id, name: creator.name },
       });
     })
     .catch((err) => {
