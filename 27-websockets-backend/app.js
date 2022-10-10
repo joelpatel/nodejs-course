@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import multer from "multer";
 import { config } from "dotenv";
+import { Server } from "socket.io";
 
 import feedRoutes from "./routes/feed.js";
 import authRoutes from "./routes/auth.js";
@@ -84,6 +85,11 @@ mongoose
     `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}.ccmd1sr.mongodb.net/${process.env.MONGODB_DATABASE_NAME}?retryWrites=true&w=majority`
   )
   .then((_) => {
-    app.listen(5000);
+    const server = app.listen(5000);
+    const io = new Server(server);
+
+    io.on("connection", (socket) => {
+      console.log("Client connected.");
+    });
   })
   .catch((err) => console.log(err));
