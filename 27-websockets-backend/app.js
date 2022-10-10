@@ -1,4 +1,5 @@
 import path from "path";
+import { createServer } from "http";
 import { fileURLToPath } from "url";
 
 import express from "express";
@@ -11,6 +12,7 @@ import { Server } from "socket.io";
 import feedRoutes from "./routes/feed.js";
 import authRoutes from "./routes/auth.js";
 import statusRouter from "./routes/status.js";
+import { init } from "./socket.js";
 
 config(); // load from .env to process.env
 const app = express();
@@ -85,11 +87,11 @@ mongoose
     `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}.ccmd1sr.mongodb.net/${process.env.MONGODB_DATABASE_NAME}?retryWrites=true&w=majority`
   )
   .then((_) => {
-    const server = app.listen(5000);
-    const io = new Server(server);
-
+    const httpServer = createServer(app);
+    const io = init(httpServer);
     io.on("connection", (socket) => {
       console.log("Client connected.");
     });
+    httpServer.listen(5000);
   })
   .catch((err) => console.log(err));

@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 
 import Post from "../models/post.js";
 import User from "../models/user.js";
+import * as io from "../socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +19,7 @@ const getPosts = async (req, res, next) => {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
       .populate("creator")
+      .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
     res.status(200).json({
@@ -104,6 +106,13 @@ const createPost = async (req, res, next) => {
       user.posts.push(post); // letting mongoose do the heavy lifting in figuring out the post id
     }
     await user.save();
+    io.getIO().emit("posts", {
+      action: "create",
+      post: {
+        ...savedPost._doc,
+        creator: { _id: req.userIDFromJWTToken, name: user.name },
+      },
+    });
     res.status(201).json({
       message: "Post created Successfully!",
       post: savedPost,
@@ -111,6 +120,7 @@ const createPost = async (req, res, next) => {
     });
   } catch (err) {
     if (!err.statusCode) {
+      console.log(err.message);
       err.statusCode = 500; // indicating server side error
     }
     next(err);
@@ -153,7 +163,7 @@ const updatePost = async (req, res, next) => {
   }
 
   try {
-    const post = await Post.findById(postID);
+    const post = await Post.findById(postID).populate("creator");
     if (!post) {
       const error = new Error("Could not find the requested post.");
       error.statusCode = 404;
@@ -165,7 +175,7 @@ const updatePost = async (req, res, next) => {
      * is the one requesting the updation
      * of this post.
      */
-    if (post.creator.toString() !== req.userIDFromJWTToken) {
+    if (post.creator._id.toString() !== req.userIDFromJWTToken) {
       const err = new Error("Not authorized!");
       err.statusCode = 403;
       throw err;
@@ -185,6 +195,11 @@ const updatePost = async (req, res, next) => {
     post.imageURL = imageURL;
 
     const result = await post.save();
+
+    io.getIO().emit("posts", {
+      action: "update",
+      post: result,
+    });
 
     res.status(200).json({
       message: "Post updated successfully.",
@@ -238,6 +253,11 @@ const deletePost = async (req, res, next) => {
 
     user.posts.pull(postID); // pull method is of mongoose not built in arrays
     await user.save();
+
+    io.getIO().emit("posts", {
+      action: "delete",
+      post: postID,
+    });
 
     res.status(200).json({
       message: "Post deleted successfully.",
